@@ -9,6 +9,7 @@ function Window(bounds){
     this.bounds = bounds || new Bounds();
     this.border = new Border();
     this.background = new Background();
+    this.children = null;
 }
 
 
@@ -32,11 +33,21 @@ Window.prototype = Object.assign( Object.create( View.prototype ), {
     },
 
 
+    setChildren : function(children){
+        this.children = children;
+        return this;
+    },
+
+    getChildren : function(){
+        return this.children
+    },
+
+
 
     paint: function(g, r){
         r = r || this.bounds;
-        this.background.paint(g, r);
         this.border.paint(g, r);
+        this.children.paint(g, r);
     },
 });
 
