@@ -884,6 +884,42 @@
 	    },
 	});
 
+	function Window(bounds){
+	    View.call(this);
+	    this.bounds = bounds || new Bounds();
+	    this.border = new Border();
+	    this.background = new Background();
+	}
+
+
+	Window.prototype = Object.assign( Object.create( View.prototype ), {
+
+	    constructor: Window,
+
+	    setBounds: function(bounds){
+	        this.bounds = bounds;
+	        this.border.setBounds(new Bounds(0,0, this.bounds.w, this.bounds.h));
+	        this.background.setBounds(new Bounds(
+	            this.border.lineWidth/2,
+	            this.border.lineWidth/2,
+	            this.bounds.w - this.border.lineWidth,
+	            this.bounds.h - this.border.lineWidth));
+	        return this;
+	    },
+
+	    getBounds : function(){
+	        return this.bounds;
+	    },
+
+
+
+	    paint: function(g, r){
+	        r = r || this.bounds;
+	        this.background.paint(g, r);
+	        this.border.paint(g, r);
+	    },
+	});
+
 	/**
 	 * @author Davide Spano
 	 */
@@ -1724,6 +1760,17 @@
 
 	window.customElements.define('bui-text-field', TextFieldElement);
 
+	class WindowElement extends ViewElement {
+	    constructor() {
+	        super();
+	        this.buiView = new Window();
+	}
+
+
+	}
+
+	window.customElements.define('bui-window', WindowElement);
+
 	exports.App = App;
 	exports.Background = Background;
 	exports.Border = Border;
@@ -1742,6 +1789,8 @@
 	exports.TextFieldElement = TextFieldElement;
 	exports.View = View;
 	exports.ViewElement = ViewElement;
+	exports.Window = Window;
+	exports.WindowElement = WindowElement;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

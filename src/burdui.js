@@ -6,6 +6,7 @@ export {Text} from './layout/text.js';
 export {Border} from './layout/border.js';
 export {View} from './views/view.js';
 export {Button} from './views/button.js'
+export {Window} from './views/window'
 export {GridPanel} from './views/gridPanel'
 export {Label} from './views/label'
 export {StackPanel} from './views/stackPanel.js'
@@ -16,3 +17,4 @@ export {GridPanelElement} from './declarative/gridPanelElement'
 export {LabelElement} from './declarative/labelElement'
 export {StackPanelElement} from './declarative/stackPanelElement'
 export {TextFieldElement} from './declarative/textFieldElement'
+export {WindowElement} from './declarative/windowElement'

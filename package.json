@@ -5,9 +5,9 @@
   "main": "build/burdui.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c utils/rollup.config.js && cp build/burdui.js examples/js/burdui.js",
+    "build": "rollup -c utils/rollup.config.js && cross-env cp build/burdui.js examples/js/burdui.js",
     "build-win" : "rollup -c utils/rollup.config.js && copy build\\burdui.js examples\\js\\burdui.js",
-    "start": "npm run-script build && http-server examples"
+    "start": "npm run-script build-win && http-server examples"
   },
   "keywords": [],
   "author": "Davide Spano",
