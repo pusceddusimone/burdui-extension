@@ -658,6 +658,7 @@
 	    this.isView = true;
 	    this.parent = null;
 	    this.listeners = {};
+	    this.id = null;
 
 	    this.addEventListener(EventTypes.mouseClick, function(source, e){
 	        console.log(`mouse click (${e.x}, ${e.y}) on view ${source.name}`);
@@ -687,6 +688,15 @@
 
 	    getName : function(){
 	        return name;
+	    },
+
+	    setId : function(id){
+	      this.id = id;
+	      return this;
+	    },
+
+	    getId : function(){
+	        return this.id;
 	    },
 
 	    setBackgroundColor: function(color){
@@ -742,6 +752,16 @@
 	        return this;
 	    },
 
+	    removeChildById: function(id){
+	        let newChildren = [];
+	        this.children.forEach((child) => {
+	            if(child.getId() !== id)
+	                newChildren.push(child);
+	        });
+	        this.children = newChildren;
+	        return this;
+	    },
+
 
 	    paintChildren: function(g, b){
 	        let r = b || this.bounds;
@@ -762,7 +782,9 @@
 	    paint: function(g, b){
 	        let r = b || this.bounds;
 
-	        g.save();
+	        //g.save();
+	        g.clearRect ( 0 ,0 , r.w , r.h );
+	        g.restore();
 	        // setting the clipping region. The view cannot draw outside its bounds
 	        g.beginPath();
 	        g.rect(r.x, r.y, r.w, r.h);
@@ -889,7 +911,7 @@
 	    this.bounds = bounds || new Bounds();
 	    this.border = new Border();
 	    this.background = new Background();
-	    this.children = null;
+	    this.windowChildren = [];
 	}
 
 
@@ -914,12 +936,12 @@
 
 
 	    setChildren : function(children){
-	        this.children = children;
+	        this.windowChildren = children;
 	        return this;
 	    },
 
 	    getChildren : function(){
-	        return this.children
+	        return this.windowChildren
 	    },
 
 
@@ -927,7 +949,7 @@
 	    paint: function(g, r){
 	        r = r || this.bounds;
 	        this.border.paint(g, r);
-	        this.children.paint(g, r);
+	        this.windowChildren.paint(g, r);
 	    },
 	});
 

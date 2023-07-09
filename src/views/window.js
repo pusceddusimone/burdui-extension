@@ -2,14 +2,13 @@ import {View} from "./view";
 import {Bounds} from "../layout/bounds";
 import {Border} from "../layout/border";
 import {Background} from "../layout/background";
-import {Text} from "../layout/text";
 
 function Window(bounds){
     View.call(this);
     this.bounds = bounds || new Bounds();
     this.border = new Border();
     this.background = new Background();
-    this.children = null;
+    this.windowChildren = [];
 }
 
 
@@ -34,12 +33,12 @@ Window.prototype = Object.assign( Object.create( View.prototype ), {
 
 
     setChildren : function(children){
-        this.children = children;
+        this.windowChildren = children;
         return this;
     },
 
     getChildren : function(){
-        return this.children
+        return this.windowChildren
     },
 
 
@@ -47,7 +46,7 @@ Window.prototype = Object.assign( Object.create( View.prototype ), {
     paint: function(g, r){
         r = r || this.bounds;
         this.border.paint(g, r);
-        this.children.paint(g, r);
+        this.windowChildren.paint(g, r);
     },
 });
 

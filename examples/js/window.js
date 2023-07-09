@@ -1,14 +1,40 @@
 window.onload = function(){
-    const screen = document.getElementById("screen");
+    let screen = document.getElementById("screen");
+    const applicationBounds = new burdui.Bounds(0,0,1024,768);
+    let app = null;
     let windowButtons = []
     let windows = []
+    let currentId = 0;
 
     let root = new burdui.View;
-    root.setBounds(new burdui.Bounds(0,0,1024,768));
+    root.setBounds(applicationBounds);
 
-    function onWindowButtonClick() {
-        alert("ciao");
+
+    function changeWindow(buttonClicked){
+        root.removeChildById(buttonClicked.getId());
+        let selectedWindow = findWindow(buttonClicked.id);
+        if(selectedWindow) {
+            root.addChild(selectedWindow);
+        }
+        let newCanvas = document.createElement("canvas");
+        newCanvas.id = "screen";
+        newCanvas.width = 1024;
+        newCanvas.height = 768;
+        let parent = screen.parentNode;
+        parent.removeChild(screen);
+        parent.insertBefore(newCanvas, null);
+        screen = newCanvas;
+        app = new burdui.App(screen, root);
+        app.start();
     }
+
+
+    function findWindow(id){
+        let selectedWindow = null;
+        selectedWindow = windows.find((window) => window.id === id);
+        return selectedWindow;
+    }
+
 
 
     let firstButton = new burdui.Button();
@@ -19,9 +45,11 @@ window.onload = function(){
         .setBorderLineWidth(3)
         .setFont("12px Arial")
         .setText("Finestra 1")
+        .setId(currentId)
         .setTextColor("#800800")
         .addEventListener(burdui.EventTypes.mouseClick, function(source, args){
-            alert("ciao");
+            changeWindow(source);
+            app.flushQueue()
         });
 
 
@@ -30,16 +58,18 @@ window.onload = function(){
         .setBackgroundColor("#99ff99")
         .setBorderColor("#004d00")
         .setBorderLineWidth(3)
+        .setId(currentId)
         .setChildren(firstButton);
 
-    windowButtons.push(firstButton)
-    windows.push(firstWindow)
+    windowButtons.push(firstButton);
+    windows.push(firstWindow);
+    currentId += 1;
 
 
-    //root.addChild(newWindow)
+    root.addChild(firstWindow)
     root.addChild(firstButton)
 
-    const app = new burdui.App(screen, root);
+    app = new burdui.App(screen, root);
     app.start();
 
     document.getElementById("repaint").onclick = function() {
