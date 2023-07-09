@@ -6,6 +6,10 @@ class WindowElement extends ViewElement {
         super();
         this.buiView = new Window();
 }
+connectedCallback() {
+    super.connectedCallback();
+}
+
 
 
 }

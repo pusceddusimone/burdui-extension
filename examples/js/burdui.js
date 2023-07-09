@@ -782,9 +782,7 @@
 	    paint: function(g, b){
 	        let r = b || this.bounds;
 
-	        //g.save();
-	        g.clearRect ( 0 ,0 , r.w , r.h );
-	        g.restore();
+	        g.save();
 	        // setting the clipping region. The view cannot draw outside its bounds
 	        g.beginPath();
 	        g.rect(r.x, r.y, r.w, r.h);
@@ -911,7 +909,6 @@
 	    this.bounds = bounds || new Bounds();
 	    this.border = new Border();
 	    this.background = new Background();
-	    this.windowChildren = [];
 	}
 
 
@@ -927,6 +924,7 @@
 	            this.border.lineWidth/2,
 	            this.bounds.w - this.border.lineWidth,
 	            this.bounds.h - this.border.lineWidth));
+	        this.updateBounds();
 	        return this;
 	    },
 
@@ -935,13 +933,31 @@
 	    },
 
 
-	    setChildren : function(children){
-	        this.windowChildren = children;
+	    addChild: function(child){
+	        View.prototype.addChild.call(this, child);
+
+	        // not optimized, we can speed-up setting the bounds of the last child.
+	        this.updateBounds();
+
 	        return this;
 	    },
 
-	    getChildren : function(){
-	        return this.windowChildren
+	    updateBounds: function(){
+	        let next = 0;
+	        for(let i in this.children) {
+	            let c = this.children[i];
+	            switch(this.style){
+	                case "vertical":
+	                    c.setBounds(new Bounds(0, next, this.bounds.w, c.bounds.h));
+	                    next += c.bounds.h + this.padding;
+	                    break;
+
+	                case "horizontal":
+	                    c.setBounds(new Bounds(next, 0, c.bounds.w, this.bounds.h));
+	                    next += c.bounds.w + this.padding;
+	                    break;
+	            }
+	        }
 	    },
 
 
@@ -949,7 +965,7 @@
 	    paint: function(g, r){
 	        r = r || this.bounds;
 	        this.border.paint(g, r);
-	        this.windowChildren.paint(g, r);
+	        this.paintChildren(g, r);
 	    },
 	});
 
@@ -1798,11 +1814,102 @@
 	        super();
 	        this.buiView = new Window();
 	}
+	connectedCallback() {
+	    super.connectedCallback();
+	}
+
 
 
 	}
 
 	window.customElements.define('bui-window', WindowElement);
+
+	function WindowGroup(bounds){
+	    View.call(this);
+	    this.bounds = bounds || new Bounds();
+	    this.border = new Border();
+	    this.background = new Background();
+	    this.windowChildren = [];
+	    this.selectedWindow = 0;
+
+	    let firstWindow = new Window();
+	    firstWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
+	    this.windowChildren.push(firstWindow);
+	    this.addChild(firstWindow);
+	}
+
+
+	WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
+
+	    constructor: WindowGroup,
+
+	    setBounds: function(bounds){
+	        this.bounds = bounds;
+	        this.border.setBounds(new Bounds(0,0, this.bounds.w, this.bounds.h));
+	        this.background.setBounds(new Bounds(
+	            this.border.lineWidth/2,
+	            this.border.lineWidth/2,
+	            this.bounds.w - this.border.lineWidth,
+	            this.bounds.h - this.border.lineWidth));
+	        this.updateBounds();
+	        return this;
+	    },
+
+	    getBounds : function(){
+	        return this.bounds;
+	    },
+
+
+	    addChild: function(child){
+	        View.prototype.addChild.call(this, child);
+
+	        // not optimized, we can speed-up setting the bounds of the last child.
+	        this.updateBounds();
+
+	        return this;
+	    },
+
+	    updateBounds: function(){
+	        let next = 0;
+	        for(let i in this.children) {
+	            let c = this.children[i];
+	            switch(this.style){
+	                case "vertical":
+	                    c.setBounds(new Bounds(0, next, this.bounds.w, c.bounds.h));
+	                    next += c.bounds.h + this.padding;
+	                    break;
+
+	                case "horizontal":
+	                    c.setBounds(new Bounds(next, 0, c.bounds.w, this.bounds.h));
+	                    next += c.bounds.w + this.padding;
+	                    break;
+	            }
+	        }
+	    },
+
+
+
+	    paint: function(g, r){
+	        r = r || this.bounds;
+	        this.border.paint(g, r);
+	        this.paintChildren(g, r);
+	    },
+	});
+
+	class WindowGroupElement extends ViewElement {
+	    constructor() {
+	        super();
+	        this.buiView = new WindowGroup();
+	    }
+	    connectedCallback() {
+	        super.connectedCallback();
+	    }
+
+
+
+	}
+
+	window.customElements.define('bui-windowgroup', WindowGroupElement);
 
 	exports.App = App;
 	exports.Background = Background;
@@ -1824,6 +1931,7 @@
 	exports.ViewElement = ViewElement;
 	exports.Window = Window;
 	exports.WindowElement = WindowElement;
+	exports.WindowGroupElement = WindowGroupElement;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

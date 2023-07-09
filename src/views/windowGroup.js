@@ -2,18 +2,26 @@ import {View} from "./view";
 import {Bounds} from "../layout/bounds";
 import {Border} from "../layout/border";
 import {Background} from "../layout/background";
+import {Window} from "./window";
 
-function Window(bounds){
+function WindowGroup(bounds){
     View.call(this);
     this.bounds = bounds || new Bounds();
     this.border = new Border();
     this.background = new Background();
+    this.windowChildren = [];
+    this.selectedWindow = 0;
+
+    let firstWindow = new Window();
+    firstWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
+    this.windowChildren.push(firstWindow);
+    this.addChild(firstWindow);
 }
 
 
-Window.prototype = Object.assign( Object.create( View.prototype ), {
+WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
 
-    constructor: Window,
+    constructor: WindowGroup,
 
     setBounds: function(bounds){
         this.bounds = bounds;
@@ -68,4 +76,4 @@ Window.prototype = Object.assign( Object.create( View.prototype ), {
     },
 });
 
-export {Window};
+export {WindowGroup};
