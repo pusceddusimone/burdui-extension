@@ -659,10 +659,6 @@
 	    this.parent = null;
 	    this.listeners = {};
 	    this.id = null;
-
-	    this.addEventListener(EventTypes.mouseClick, function(source, e){
-	        console.log(`mouse click (${e.x}, ${e.y}) on view ${source.name}`);
-	    });
 	}
 
 	Object.assign(View.prototype, {
@@ -749,6 +745,11 @@
 	            this.children.push(c);
 	            c.parent = this;
 	        }
+	        return this;
+	    },
+
+	    removeChildren: function(){
+	        this.children = [];
 	        return this;
 	    },
 
@@ -1831,11 +1832,13 @@
 	    this.background = new Background();
 	    this.windowChildren = [];
 	    this.selectedWindow = 0;
+	    //this.formatChildrenToWindowChildren();
 
 	    let firstWindow = new Window();
 	    firstWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
-	    this.windowChildren.push(firstWindow);
+	    //this.windowChildren.push(firstWindow);
 	    this.addChild(firstWindow);
+
 	}
 
 
@@ -1857,6 +1860,14 @@
 
 	    getBounds : function(){
 	        return this.bounds;
+	    },
+
+	    formatChildrenToWindowChildren(){
+	        let children = this.children;
+	        for(let child of children){
+	            if(child.constructor.name === "Window")
+	                this.windowChildren.push(child);
+	        }
 	    },
 
 
@@ -1888,8 +1899,47 @@
 	    },
 
 
+	    addPage: function(source, args){
+	        this.selectedWindow += 1;
+	        let newWindow = new Window();
+	        newWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
+	        this.removeChildren();
+	        this.windowChildren.push(newWindow);
+	        this.windowChildren.push();
+	        this.addChild(newWindow);
+	        let screen = document.getElementById('screen').getContext('2d');
+	        let root = document.getElementById('window1').buiView;
+	        this.paint(screen, root);
+	    },
+
+	    getTabsOfWindows: function(tabsWidth = 120, tabsHeight = 40){
+	        let windowGroupBounds = this.getBounds();
+	        let currentWidth = 0;
+	        for(let window of this.windowChildren){
+	            let button = new Button();
+	            button.setBounds(new Bounds(windowGroupBounds.x+currentWidth,windowGroupBounds.y+1, tabsWidth, tabsHeight)).setBackgroundColor("white")
+	                .setBorderColor("#004d00")
+	                .setBorderLineWidth(3)
+	                .setFont("16px Arial")
+	                .setText("Finestra uno")
+	                .setTextColor("#004d00");
+	            currentWidth += tabsWidth;
+	            this.addChild(button);
+	        }
+	        let buttonNewPage = new Button();
+	        buttonNewPage.setBounds(new Bounds(windowGroupBounds.x+currentWidth-1,windowGroupBounds.y+1, 50, 40)).setBackgroundColor("white")
+	            .setBorderColor("#004d00")
+	            .setBorderLineWidth(3)
+	            .setFont("16px Arial")
+	            .setText("+")
+	            .setTextColor("#004d00")
+	            .addEventListener(burdui.EventTypes.mouseClick, (source, args) => { this.addPage(source, args);});
+	        this.addChild(buttonNewPage);
+	    },
+
 
 	    paint: function(g, r){
+	        this.getTabsOfWindows();
 	        r = r || this.bounds;
 	        this.border.paint(g, r);
 	        this.paintChildren(g, r);
@@ -1903,6 +1953,7 @@
 	    }
 	    connectedCallback() {
 	        super.connectedCallback();
+	        setTimeout(() => {this.buiView.formatChildrenToWindowChildren();}, 1000);
 	    }
 
 

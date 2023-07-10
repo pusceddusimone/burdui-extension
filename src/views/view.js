@@ -17,10 +17,6 @@ function View(){
     this.parent = null;
     this.listeners = {};
     this.id = null;
-
-    this.addEventListener(EventTypes.mouseClick, function(source, e){
-        console.log(`mouse click (${e.x}, ${e.y}) on view ${source.name}`);
-    })
 }
 
 Object.assign(View.prototype, {
@@ -107,6 +103,11 @@ Object.assign(View.prototype, {
             this.children.push(c);
             c.parent = this;
         }
+        return this;
+    },
+
+    removeChildren: function(){
+        this.children = [];
         return this;
     },
 

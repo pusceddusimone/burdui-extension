@@ -8,6 +8,7 @@ class WindowGroupElement extends ViewElement {
     }
     connectedCallback() {
         super.connectedCallback();
+        setTimeout(() => {this.buiView.formatChildrenToWindowChildren()}, 1000);
     }
 
 
