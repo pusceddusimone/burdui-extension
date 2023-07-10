@@ -1356,19 +1356,23 @@
 
 	    }
 
-	    connectedCallback(){
+	    connectedCallback(callbackMutation = null){
 	        const self = this;
+	        let addedChild = false;
 	        var observer = new MutationObserver(function(mutations) {
 	            mutations.forEach(function(mutation) {
 	                //Detect <img> insertion
 	                if (mutation.addedNodes.length){
 	                    const child = mutation.addedNodes[0];
 	                    if(child.buiView && child.buiView.isView){
+	                        addedChild = true;
 	                        self.buiView.addChild(child.buiView);
 	                    }
 	                }
 
 	            });
+	            if(typeof(callbackMutation) === "function" && addedChild)
+	                callbackMutation();
 	        });
 
 	        observer.observe(this, { childList: true });
@@ -1834,11 +1838,6 @@
 	    this.selectedWindow = 0;
 	    //this.formatChildrenToWindowChildren();
 
-	    let firstWindow = new Window();
-	    firstWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
-	    //this.windowChildren.push(firstWindow);
-	    this.addChild(firstWindow);
-
 	}
 
 
@@ -1898,6 +1897,14 @@
 	        }
 	    },
 
+	    paintSelectedWindow: function(){
+	        if(this.windowChildren[this.selectedWindow]){
+	            let screen = document.getElementById('screen').getContext('2d');
+	            let root = document.getElementById('window1').buiView;
+	            this.windowChildren[this.selectedWindow].paint(screen, root);
+	        }
+	    },
+
 
 	    addPage: function(source, args){
 	        this.selectedWindow += 1;
@@ -1943,6 +1950,7 @@
 	        r = r || this.bounds;
 	        this.border.paint(g, r);
 	        this.paintChildren(g, r);
+	        this.paintSelectedWindow();
 	    },
 	});
 
@@ -1952,8 +1960,13 @@
 	        this.buiView = new WindowGroup();
 	    }
 	    connectedCallback() {
-	        super.connectedCallback();
-	        setTimeout(() => {this.buiView.formatChildrenToWindowChildren();}, 1000);
+	        super.connectedCallback(() => {
+	            {
+	                this.buiView.formatChildrenToWindowChildren();
+	                //firstCallback = false;
+	            }
+	        });
+	        //setTimeout(() => {this.buiView.formatChildrenToWindowChildren()}, 1000);
 	    }
 
 

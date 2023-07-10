@@ -7,8 +7,14 @@ class WindowGroupElement extends ViewElement {
         this.buiView = new WindowGroup();
     }
     connectedCallback() {
-        super.connectedCallback();
-        setTimeout(() => {this.buiView.formatChildrenToWindowChildren()}, 1000);
+        let firstCallback = true;
+        super.connectedCallback(() => {
+            if(firstCallback){
+                this.buiView.formatChildrenToWindowChildren();
+                firstCallback = false;
+            }
+        });
+        //setTimeout(() => {this.buiView.formatChildrenToWindowChildren()}, 1000);
     }
 
 

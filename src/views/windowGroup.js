@@ -14,11 +14,6 @@ function WindowGroup(bounds){
     this.selectedWindow = 0;
     //this.formatChildrenToWindowChildren();
 
-    let firstWindow = new Window();
-    firstWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
-    //this.windowChildren.push(firstWindow);
-    this.addChild(firstWindow);
-
 }
 
 
@@ -78,6 +73,14 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
         }
     },
 
+    paintSelectedWindow: function(){
+        if(this.windowChildren[this.selectedWindow]){
+            let screen = document.getElementById('screen').getContext('2d');
+            let root = document.getElementById('window1').buiView;
+            this.windowChildren[this.selectedWindow].paint(screen, root);
+        }
+    },
+
 
     addPage: function(source, args){
         this.selectedWindow += 1;
@@ -123,6 +126,7 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
         r = r || this.bounds;
         this.border.paint(g, r);
         this.paintChildren(g, r);
+        this.paintSelectedWindow();
     },
 });
 

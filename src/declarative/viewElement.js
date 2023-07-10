@@ -8,19 +8,23 @@ class ViewElement extends HTMLElement{
 
     }
 
-    connectedCallback(){
+    connectedCallback(callbackMutation = null){
         const self = this;
+        let addedChild = false;
         var observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 //Detect <img> insertion
                 if (mutation.addedNodes.length){
                     const child = mutation.addedNodes[0];
                     if(child.buiView && child.buiView.isView){
+                        addedChild = true;
                         self.buiView.addChild(child.buiView);
                     }
                 }
 
             })
+            if(typeof(callbackMutation) === "function" && addedChild)
+                callbackMutation();
         });
 
         observer.observe(this, { childList: true });
