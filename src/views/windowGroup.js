@@ -5,6 +5,11 @@ import {Background} from "../layout/background";
 import {Window} from "./window";
 import {Button} from "./button";
 
+/**
+ * Constructor for the WindowGroup
+ * @param bounds bounds of the window group
+ * @constructor
+ */
 function WindowGroup(bounds){
     View.call(this);
     this.bounds = bounds || new Bounds();
@@ -37,6 +42,10 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
         return this.bounds;
     },
 
+    /**
+     * Function to format the initial childs of the windowGroup
+     * @param child child of the windowGroup (must be window to be considered)
+     */
     formatChildrenToWindowChildren(child){
         if(child.constructor.name === "Window"){
             let firstAvailableIndex = this.findFirstAvailableIndexForWindow();
@@ -45,17 +54,23 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
             this.windowChildren.push(child);
         }
     },
-
+    /**
+     * Finds the first available index for a newly created window
+     * @returns {number} the index for the window
+     */
     findFirstAvailableIndexForWindow: function(){
-        let index = 0;
-        while(true){
-            if(!(index in this.windowMap))
-                return index;
-            index +=1;
+        let windowIndex = 0;
+        while (typeof(this.windowMap[windowIndex]) !== "undefined") {
+            windowIndex++;
         }
+        return windowIndex;
     },
 
-
+    /**
+     * Override to add a child
+     * @param child child to add
+     * @returns {WindowGroup}
+     */
     addChild: function(child){
         View.prototype.addChild.call(this, child);
 
@@ -64,6 +79,7 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
 
         return this;
     },
+
 
     updateBounds: function(){
         let next = 0;
@@ -83,14 +99,11 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
         }
     },
 
-    paintSelectedWindow: function(){
-        if(this.windowChildren[this.selectedWindow]){
-            let screen = document.getElementById('screen').getContext('2d');
-            let root = document.getElementById('window1').buiView;
-            this.windowChildren[this.selectedWindow].paint(screen, root);
-        }
-    },
-
+    /**
+     * Function to paint the children of the windowGroup
+     * @param g the canvas
+     * @param b the root of the windowgroup
+     */
     paintChildren: function (g, b){
         let r = b || this.bounds;
         for(let c of this.children){
@@ -108,6 +121,10 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
         }
     },
 
+    /**
+     * Function to switch to a new window
+     * @param id the id of the window
+     */
     changeWindow: function(id){
         if(id == null)
             return;
@@ -118,43 +135,80 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
         this.paint(screen, root);
     },
 
+
+    /**
+     * Function to clean the window, used when we switch to a new one
+     * @param screen screen to clean
+     */
     resetWindow: function (screen){
         let rect = screen.getBoundingClientRect();
         let x = rect.left;
         let y = rect.top;
         let context = screen.getContext('2d');
-        context.clearRect(x,y,context.canvas.width-this.border.lineWidth-10,context.canvas.height-this.border.lineWidth-10);
+        context.clearRect(x-3,y-3,context.canvas.width-this.border.lineWidth-10,context.canvas.height-this.border.lineWidth-10);
     },
 
 
+    /**
+     * Adds a new page when we click to the '+' button
+     */
     addPage: function(){
-        this.selectedWindow += 1;
+        let newIndex = this.findFirstAvailableIndexForWindow();
         let newWindow = new Window();
         newWindow.setBounds(new Bounds(0,0,this.bounds.w,this.bounds.h-50));
-        this.removeChildren();
+        newWindow.setId(newIndex);
         this.windowChildren.push(newWindow);
         this.windowChildren.push();
         this.addChild(newWindow);
+        this.windowMap.push(newIndex);
         let screen = document.getElementById('screen').getContext('2d');
         let root = document.getElementById('window1').buiView;
         this.paint(screen, root);
+        this.changeWindow(newIndex);
     },
 
+    /**
+     * Removes a page when we click on the corresponding 'X' button
+     * @param id id of the window to remove
+     */
+    removePage: function(id){
+        let newWindows = this.windowChildren.filter(window => window.getId() !== id);
+        let newSelected = this.windowMap.indexOf(id);
+        this.selectedWindow = this.windowMap[newSelected-1] ? this.windowMap[newSelected-1] : 0;
+        let newMap = this.windowMap.filter(mapId => mapId !== id);
+        this.windowChildren = newWindows;
+        this.windowMap = newMap;
+        let screen = document.getElementById('screen').getContext('2d');
+        let root = document.getElementById('window1').buiView;
+        this.removeChildren();
+        this.paint(screen, root);
+        this.changeWindow(this.selectedWindow);
+    },
+
+    /**
+     * Function to add as childs the tabs to switch windows
+     * @param tabsWidth width of the tab
+     * @param tabsHeight height of the tab
+     * @param xButtonWidth width of the x button
+     */
     getTabsOfWindows: function(tabsWidth = 120, tabsHeight = 40, xButtonWidth = 20){
         let windowGroupBounds = this.getBounds();
         let currentWidth = 0;
-        let index = 0;
-        for(let window of this.windowChildren){
+        for(let window of this.windowChildren){ //For each window children
             let button = new Button();
-            button.setBounds(new Bounds(windowGroupBounds.x+currentWidth,windowGroupBounds.y+1, tabsWidth, tabsHeight)).setBackgroundColor("white")
+            let backgroundColor = "white";
+            if(window.getId() === this.selectedWindow) //If selected window change color to red
+                backgroundColor = "red";
+            //Generic tab button of a window
+            button.setBounds(new Bounds(windowGroupBounds.x+currentWidth,windowGroupBounds.y+1, tabsWidth, tabsHeight)).setBackgroundColor(backgroundColor)
                 .setBorderColor("#004d00")
                 .setBorderLineWidth(3)
                 .setFont("16px Arial")
-                .setText("Finestra " + (index+1))
+                .setText("Finestra " + (window.getId()))
                 .setTextColor("#004d00")
                 .setId(window.getId())
                 .addEventListener(burdui.EventTypes.mouseClick, (source) => {this.changeWindow(source.getId())});
-            let closeWindowButton = new Button();
+            let closeWindowButton = new Button(); //X button to close a window
             closeWindowButton.setBounds(new Bounds(windowGroupBounds.x+currentWidth+tabsWidth-xButtonWidth,windowGroupBounds.y+1, xButtonWidth, tabsHeight)).setBackgroundColor("white")
                 .setBorderColor("#004d00")
                 .setBorderLineWidth(3)
@@ -162,14 +216,14 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
                 .setText("X")
                 .setTextColor("#004d00")
                 .setId(window.getId())
-                .addEventListener(burdui.EventTypes.mouseClick, (source) => {});
+                .addEventListener(burdui.EventTypes.mouseClick, (source) => {this.removePage(source.getId())});
             currentWidth += tabsWidth;
             this.addChild(button);
             this.addChild(closeWindowButton);
-            index += 1;
         }
+        //Button to add a new page
         let buttonNewPage = new Button();
-        buttonNewPage.setBounds(new Bounds(windowGroupBounds.x+currentWidth-1,windowGroupBounds.y+1, 50, 40)).setBackgroundColor("white")
+        buttonNewPage.setBounds(new Bounds(windowGroupBounds.x+currentWidth-1,windowGroupBounds.y+1, 30, 40)).setBackgroundColor("white")
             .setBorderColor("#004d00")
             .setBorderLineWidth(3)
             .setFont("16px Arial")
@@ -180,8 +234,13 @@ WindowGroup.prototype = Object.assign( Object.create( View.prototype ), {
     },
 
 
+    /**
+     * Override of the paint function
+     * @param g the canvas
+     * @param r the root
+     */
     paint: function(g, r){
-        this.getTabsOfWindows();
+        this.getTabsOfWindows(); //Adds the tabs as children
         r = r || this.bounds;
         this.border.paint(g, r);
         this.paintChildren(g, r);

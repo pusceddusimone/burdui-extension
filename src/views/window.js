@@ -60,7 +60,11 @@ Window.prototype = Object.assign( Object.create( View.prototype ), {
     },
 
 
-
+    /**
+     * Paints the window, the window just acts as a container for the windowgroup
+     * @param g the canvas
+     * @param r the root
+     */
     paint: function(g, r){
         r = r || this.bounds;
         this.border.paint(g, r);
